@@ -1680,7 +1680,7 @@ By following these practices, you can effectively manage your database schema ev
 
 *   Migrations with Alembic
 
- ## 9. Automating SQLAlchemy Models, Pydantic Schemas, FastAPI CRUD
+## 9. Automating SQLAlchemy Models, Pydantic Schemas, FastAPI CRUD
 ### Automating SQLAlchemy Models
 The process of creating relational databases begins with data modelling, and most data modeling tools e.g. dbdiagram.io provide the feature of converting your data model into SQL code of your chosen dialect.
 
