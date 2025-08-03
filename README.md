@@ -53,12 +53,17 @@
     *   Managing Model Metadata and Versions in a Database
     *   Asynchronous Task Queues for ML Workloads (e.g., Celery)
     *   Real-time Inference with WebSockets
+      
+9. **Automating SQLAlchemy Models, Pydantic Schemas, FastAPI CRUD**
+    * Merging SQLAlchemy Models and Pydantic Schemas into one ``SQLModel``
+    * Automating the creation of ``SQLModels``
+    * Automating common FastAPI CRUD operations with ``fastcrud``
 
-9.  **Tips and Tricks**
+10.  **Tips and Tricks**
 
-10. **Conclusion**
+11. **Conclusion**
 
-11. **References**
+12. **References**
 
 
 
@@ -1675,10 +1680,96 @@ By following these practices, you can effectively manage your database schema ev
 
 *   Migrations with Alembic
 
+ ## 9. Automating SQLAlchemy Models, Pydantic Schemas, FastAPI CRUD
+### Automating SQLAlchemy Models
+The process of creating relational databases begins with data modelling, and most data modeling tools e.g. dbdiagram.io provide the feature of converting your data model into SQL code of your chosen dialect.
 
+Given that you have your database tables defined after data modeling, you can automate the process of writing SQLAlchemy ORM models using the tool [sqlacodegen](https://pypi.org/project/sqlacodegen/) 
 
+For example:
 
-## 9. Tips and Tricks
+    sqlacodegen postgresql:///some_local_db > mymodels.py
+Executing this **one line of code** will create **all** your database SQLAlchemy models and save to the file `mymodels.py`
+
+### Merging SQLAlchemy Models and Pydantic Schemas into one ``SQLModel``
+Taking automation one step further, you can use `SQLModel` as both SQLAlchemy Model and Pydantic Schemas merged into one.
+
+[SQLModel](https://sqlmodel.tiangolo.com/) is a library for interacting with  SQL databases  from Python code, with Python objects. It is designed to be intuitive, easy to use, highly compatible, and robust.
+
+**SQLModel**  is based on Python type annotations, and powered by  Pydantic and  SQLAlchemy
+
+**SQLModel** is designed to simplify interacting with SQL databases in [FastAPI](https://fastapi.tiangolo.com/) applications, it was created by the same [author](https://tiangolo.com/)
+
+### Automating the creation of ``SQLModels``
+Using the tool `sqlacodegen` we introduced earlier, instead of creating SQLAlchemy models we can create SQLModel directly
+Example:
+
+    sqlacodegen --generator sqlmodels sqlite:///database.db > mymodels.py
+Executing this code will give you SQLModels based on your database schema which can act as both SQLAlchemy model and Pydantic Model at the same time and easily integrates with FastAPI given they have the same author.
+### Automating common FastAPI CRUD operations with ``fastcrud``
+**[FastCRUD](https://pypi.org/project/fastcrud/0.1.4/)** is a Python package for **FastAPI**, offering robust async CRUD operations and flexible endpoint creation utilities, streamlined through advanced features like **auto-detected join** conditions, **dynamic sorting**, and offset and cursor **pagination**.
+
+The `fastcrud` library for FastAPI provides two main ways to auto-generate CRUD endpoints:
+
+ 1. `crud_router`
+
+**Purpose**
+
+Generates a full set of CRUD routes for **a single model**.
+
+**Use Case**
+
+Use `crud_router` when you want explicit control and only need to register endpoints for one model at a time.
+When you want to automatically generate common endpoints like:
+
+-   `GET /items/`
+    
+-   `POST /items/`
+    
+-   `GET /items/{id}`
+    
+-   `PUT /items/{id}`
+    
+-   `DELETE /items/{id}`
+
+**Example**
+```python
+from fastcrud import crud_router
+from my_models import User, UserCreate, UserUpdate
+router = crud_router(
+        session=get_session,
+        model=User,
+        create_schema=UserCreate,
+        update_schema=UserUpdate,
+        path="/users",
+        tags=["Users"]
+    )
+```
+----------
+ 2. `fastcrud` (function)
+
+**Purpose**
+
+Automatically registers **CRUD routers for multiple models** in a single call.
+
+ **Use Case**
+
+Use `fastcrud` when you have many models and want to quickly generate routes without manually calling `crud_router` for each one.
+
+**Example**
+```python
+from fastcrud import fastcrud
+from my_models import models  # Dict[Model, (CreateSchema, UpdateSchema)]
+
+fastcrud(
+    app=app,
+    session=get_session,
+    models=models,
+    prefix="/api"
+)
+```
+
+## 10. Tips and Tricks
 
 This section provides general tips and best practices that can enhance your development experience and the quality of your applications when working with FastAPI, Pydantic, and SQLAlchemy.
 
@@ -1724,4 +1815,3 @@ This section provides general tips and best practices that can enhance your deve
 *   **Raw SQL When Necessary**: While ORM is convenient, don't shy away from using SQLAlchemy Core or even raw SQL (`session.execute(text("..."))`) for complex queries or performance-critical operations where the ORM might be less efficient.
 
 By incorporating these tips and tricks into your development workflow, you can build more robust, performant, and maintainable applications with FastAPI, Pydantic, and SQLAlchemy.
-
